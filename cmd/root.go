@@ -45,7 +45,7 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "gpurl",
+	Use:   "gpurl [flags] [urls]",
 	Short: "gpurl is a url parser-extractor",
 	Long: `gpurl extracts parts from a url. It uses parser from go standard library.
 Urls can be passed as arguments or piped via stdin`,
