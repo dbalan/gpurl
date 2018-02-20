@@ -33,6 +33,7 @@ import (
 	"fmt"
 	"os"
 
+	"bufio"
 	"github.com/spf13/cobra"
 	"net/url"
 )
@@ -40,8 +41,9 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gpurl",
-	Short: "gpurl is a url parser based on go standard library",
-	Long:  `gpurl take urls from stdin or as an argument, parses the url and prints out specified parts`,
+	Short: "gpurl is a url parser-extractor",
+	Long: `gpurl take urls from stdin or as an arguments, parses the url and prints out specified parts.
+Uses parser from go standard library`,
 	Run: func(cmd *cobra.Command, args []string) {
 		part := cmd.Flag("part").Value.String()
 
@@ -52,7 +54,11 @@ var rootCmd = &cobra.Command{
 			}
 		} else {
 			// read from stdin
-
+			scanner := bufio.NewScanner(os.Stdin)
+			for scanner.Scan() {
+				_gpurl(scanner.Text(), part)
+			}
+			handleError(scanner.Err())
 		}
 	},
 }
@@ -67,18 +73,22 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringP("part", "p", "host", "part of the url to extract")
+	rootCmd.PersistentFlags().StringP("part", "p", "host", "part of the url to extract, could be host, scheme, path")
 }
 
 // this is the main for core functionality
 func _gpurl(link, partname string) {
 	res, err := parseURL(link, partname)
+	handleError(err)
+	if res != "" {
+		fmt.Println(res)
+	}
+}
+
+func handleError(err error) {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(-1)
-	}
-	if res != "" {
-		fmt.Println(res)
 	}
 }
 
