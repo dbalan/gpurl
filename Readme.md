@@ -10,8 +10,21 @@ go get github.com/dbalan/gpurl
 ```
 
 This will create the gpurl executable under your `$GOPATH/bin` directory.
+## Usage
+```
+gpurl extracts parts from a url. It uses parser from go standard library.
+Urls can be passed as arguments or piped via stdin
 
-## Example
+Usage:
+  gpurl [flags] [urls]
+
+Flags:
+  -e, --empty-error   error if extracted part is empty
+  -h, --help          help for gpurl
+  -p, --part string   part of the url to extract, could be host, scheme, path (default "host")
+```
+
+### Example
 
 ```bash
 % gpurl -p host http://dbalan.in/hello
