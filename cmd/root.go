@@ -38,25 +38,29 @@ import (
 	"net/url"
 )
 
+var (
+	strict bool
+	part   string
+)
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gpurl",
 	Short: "gpurl is a url parser-extractor",
-	Long: `gpurl take urls from stdin or as an arguments, parses the url and prints out specified parts.
-Uses parser from go standard library`,
+	Long: `gpurl extracts parts from a url. It uses parser from go standard library.
+Urls can be passed as arguments or piped via stdin`,
 	Run: func(cmd *cobra.Command, args []string) {
-		part := cmd.Flag("part").Value.String()
 
 		if len(args) > 0 {
 			// we use args from cli
 			for _, u := range args {
-				_gpurl(u, part)
+				_gpurl(u, part, strict)
 			}
 		} else {
 			// read from stdin
 			scanner := bufio.NewScanner(os.Stdin)
 			for scanner.Scan() {
-				_gpurl(scanner.Text(), part)
+				_gpurl(scanner.Text(), part, strict)
 			}
 			handleError(scanner.Err())
 		}
@@ -73,15 +77,18 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringP("part", "p", "host", "part of the url to extract, could be host, scheme, path")
+	rootCmd.PersistentFlags().StringVarP(&part, "part", "p", "host", "part of the url to extract, could be host, scheme, path")
+	rootCmd.PersistentFlags().BoolVarP(&strict, "empty-error", "e", false, "error if extracted part is empty")
 }
 
 // this is the main for core functionality
-func _gpurl(link, partname string) {
+func _gpurl(link, partname string, strict bool) {
 	res, err := parseURL(link, partname)
 	handleError(err)
 	if res != "" {
 		fmt.Println(res)
+	} else if strict {
+		handleError(fmt.Errorf("%s is empty and strict checking is enabled", partname))
 	}
 }
 
